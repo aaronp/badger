@@ -9,7 +9,7 @@ object const {
   def ScalaVersion = ScalaTwelve
 }
 
-object bucky extends ScalaModule with ScalafmtModule with PublishModule {
+object badger extends ScalaModule with ScalafmtModule with PublishModule {
   def scalaVersion = const.ScalaVersion
 
   //def forkArgs = Seq("-Xmx1g")
@@ -33,7 +33,7 @@ object bucky extends ScalaModule with ScalafmtModule with PublishModule {
 
   def publishVersion = "0.0.1"
   def pomSettings = PomSettings(
-    description = "Bucky",
+    description = "Badger",
     organization = "com.github.aaronp",
     url = "https://github.com/aaronp/badger",
     licenses = Seq(License.MIT),

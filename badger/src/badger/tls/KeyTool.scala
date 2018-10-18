@@ -1,4 +1,5 @@
 package badger.tls
+import java.net.InetAddress
 import java.nio.file.Path
 import java.util.Locale
 
@@ -65,7 +66,7 @@ case class KeyTool(dname: DistinguishedName,
     val ExtensionR = """(.*)\..+""".r
     val fileName = pathToKeystore.getFileName.toString match {
       case ExtensionR(fileName) => fileName + ".cer"
-      case name => name + ".cer"
+      case name                 => name + ".cer"
     }
     pathToKeystore.getParent.resolve(fileName)
   }
