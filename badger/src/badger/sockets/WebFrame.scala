@@ -1,6 +1,8 @@
-package badger
+package badger.sockets
 
 import java.nio.ByteBuffer
+
+import io.vertx.scala.core.http.WebSocketFrame
 
 sealed trait WebFrame {
   def asText: Option[String]
@@ -21,6 +23,24 @@ object WebFrame {
   def binary(data: ByteBuffer): BinaryFrame = BinaryFrame(data)
 
   def close(statusCode: Short, reason: Option[String] = None) = CloseFrame(statusCode, reason)
+
+
+
+  def apply(vertxFrame: WebSocketFrame): WebFrame = {
+    if (vertxFrame.isText()) {
+      if (vertxFrame.isFinal()) {
+        WebFrame.finalText(vertxFrame.textData())
+      } else {
+        WebFrame.text(vertxFrame.textData())
+      }
+    } else {
+      if (vertxFrame.isFinal()) {
+        WebFrame.finalBinary(vertxFrame.binaryData().getBytes)
+      } else {
+        WebFrame.binary(vertxFrame.binaryData().getBytes)
+      }
+    }
+  }
 }
 
 final case class TextFrame(text: String) extends WebFrame {

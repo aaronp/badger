@@ -1,0 +1,32 @@
+<html>
+<head>
+
+    <script type="text/javascript">
+         function shutdown() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("DELETE", window.location.protocol + "//" + window.location.host + "/rest/shutdown", true);
+            xhr.onload = function () {
+                if (xhr.readyState != 4 || xhr.status != "200") {
+                    console.error(xhr.responseText);
+                } else {
+                    console.log("shut down!");
+                }
+            }
+            xhr.send(null);
+         }
+
+
+    </script>
+
+</head>
+<body>
+<h1>Hello!</h1>
+<a href="sockets.html">test some sockets</a><br/>
+<br/>
+<br/>
+<a href="rest/hello">check the rest/hello route</a><br/>
+<br/>
+<br/>
+<button onClick="shutdown()">Shut down!</button>
+</body>
+</html>

@@ -1,4 +1,7 @@
-import mill._, scalalib._, publish._, scalafmt._, scalajslib._
+import mill._
+import mill.scalalib._
+import mill.scalalib.publish._
+import mill.scalalib.scalafmt._
 
 
 // http://www.lihaoyi.com/mill/index.html
@@ -9,13 +12,13 @@ object const {
   def ScalaVersion = ScalaTwelve
 }
 
-object bucky extends ScalaModule with ScalafmtModule with PublishModule {
+object badger extends ScalaModule with ScalafmtModule with PublishModule {
   def scalaVersion = const.ScalaVersion
 
   //def forkArgs = Seq("-Xmx1g")
   override def scalacOptions = Seq("-deprecation", "-feature")
   
-  def mainClass = Some("badger.Main")
+  def mainClass = Some("badger.BadgerMain")
 
 
 //  val monix = List("monix", "monix-execution",  "monix-eval", "monix-reactive", "monix-tail").map { art =>
@@ -26,6 +29,8 @@ object bucky extends ScalaModule with ScalafmtModule with PublishModule {
   def ivyDeps = Agg(
     ivy"io.vertx::vertx-lang-scala:3.5.2",
     ivy"io.vertx::vertx-web-scala:3.5.2",
+    ivy"io.vertx:vertx-auth-common:3.5.2",
+    ivy"org.scalaj::scalaj-http:2.4.1",
     ivy"org.reactivestreams:reactive-streams:1.0.2",
     ivy"com.typesafe.scala-logging::scala-logging:3.7.2",
     ivy"ch.qos.logback:logback-classic:1.1.11"
@@ -33,7 +38,7 @@ object bucky extends ScalaModule with ScalafmtModule with PublishModule {
 
   def publishVersion = "0.0.1"
   def pomSettings = PomSettings(
-    description = "Bucky",
+    description = "Badger",
     organization = "com.github.aaronp",
     url = "https://github.com/aaronp/badger",
     licenses = Seq(License.MIT),

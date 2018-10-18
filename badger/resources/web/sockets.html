@@ -1,0 +1,66 @@
+<!DOCTYPE HTML>
+<!-- thanks to https://www.tutorialspoint.com/html5/html5_websocket.htm -->
+<html>
+<head>
+
+    <script type = "text/javascript">
+
+         function WebSocketTest() {
+
+            if ("WebSocket" in window) {
+               // Let us open a web socket
+               var ws = new WebSocket("wss://" + window.location.host + "/echo2");
+               ws.onopen = function() {
+                  // Web Socket is connected, send data using send()
+                  ws.send("Message to send");
+               };
+               var count = 0;
+               ws.onmessage = function (evt) {
+                  var received_msg = evt.data;
+                  console.log("Got: " + received_msg);
+                  if (count < 5) {
+                    count = count + 1;
+                    ws.send("Sending " + count);
+                  } else {
+                    ws.close();
+                  }
+               };
+
+               ws.onclose = function() {
+
+                  // websocket is closed.
+                  alert("Closed connection after " + count + " messages sent");
+               };
+            } else {
+
+               // The browser doesn't support WebSocket
+               alert("WebSocket NOT supported by your Browser!");
+            }
+         }
+
+         function shutdown() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("DELETE", window.location.protocol + "//" + window.location.host + "/rest/shutdown", true);
+            xhr.onload = function () {
+                if (xhr.readyState != 4 || xhr.status != "200") {
+                    console.error(xhr.responseText);
+                } else {
+                    console.log("shut down!");
+                }
+            }
+            xhr.send(null);
+         }
+      </script>
+
+</head>
+
+<body>
+<div id = "sse">
+    <a href = "javascript:WebSocketTest()">Run WebSocket</a>
+    <br />
+    <br />
+    <a href="index.html">Back</a>
+</div>
+
+</body>
+</html>

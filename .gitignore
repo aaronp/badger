@@ -1,4 +1,5 @@
 .DS_Store
+.vertx
 target
 .idea
 .idea_modules

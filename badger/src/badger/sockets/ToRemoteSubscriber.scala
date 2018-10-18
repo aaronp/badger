@@ -1,7 +1,7 @@
-package badger
+package badger.sockets
 import java.util.concurrent.atomic.AtomicBoolean
 
-import com.typesafe.scalalogging.{LazyLogging, StrictLogging}
+import com.typesafe.scalalogging.StrictLogging
 import io.vertx.core.Handler
 import io.vertx.core.buffer.Buffer
 import io.vertx.scala.core.http.{ServerWebSocket, WebSocketFrame}
@@ -9,11 +9,23 @@ import org.reactivestreams.{Subscriber, Subscription}
 
 import scala.util.control.NonFatal
 
-object WebSocketObserver extends StrictLogging {
+object ToRemoteSubscriber {
+  def apply(name: String, socket: ServerWebSocket): ToRemoteSubscriber = {
+    new ToRemoteSubscriber(name, socket)
+  }
+}
 
-  def apply(name: String, socket: ServerWebSocket) = {
+class ToRemoteSubscriber private (name: String, socket: ServerWebSocket)
+    extends Subscriber[WebFrame]
+    with StrictLogging {
+  private var subscription: Subscription = null
+  private val completed = new AtomicBoolean(false)
 
-    val obs = new WebSocketObserver(name, socket)
+  override def onSubscribe(s: Subscription): Unit = {
+    require(subscription == null)
+    require(s != null)
+    subscription = s
+    subscription.request(Long.MaxValue)
 
     socket.frameHandler(new Handler[WebSocketFrame] {
       override def handle(event: WebSocketFrame): Unit = {
@@ -21,9 +33,9 @@ object WebSocketObserver extends StrictLogging {
           logger.debug(s"$name handling close frame")
           //markComplete()
         } else {
-          val frame = WebSocketFrameAsWebFrame(event)
+          val frame = WebFrame(event)
           logger.debug(s"$name handling frame ${frame}")
-          obs.onNext(frame)
+          onNext(frame)
 
           // TODO - we should apply back-pressure, but also not block the event loop.
           // need to apply some thought here if this can work in the general case,
@@ -37,25 +49,15 @@ object WebSocketObserver extends StrictLogging {
       override def handle(event: Throwable): Unit = {
         logger.warn(s"$name got exception $event")
         socket.close()
+        onError(event)
       }
     })
     socket.endHandler(new Handler[Unit] {
       override def handle(event: Unit): Unit = {
         logger.debug(s"$name ending")
+        onComplete()
       }
     })
-
-    obs
-  }
-}
-
-class WebSocketObserver private (name: String, socket: ServerWebSocket) extends Subscriber[WebFrame] with LazyLogging {
-
-  private var subscription: Subscription = null
-  override def onSubscribe(s: Subscription): Unit = {
-    require(subscription == null)
-    require(s != null)
-    subscription = s
 
     socket.accept()
   }
@@ -100,8 +102,6 @@ class WebSocketObserver private (name: String, socket: ServerWebSocket) extends 
     }
   }
 
-  private val completed = new AtomicBoolean(false)
-
   override def onComplete(): Unit = {
 
     val ok = completed.compareAndSet(false, true)
@@ -118,4 +118,5 @@ class WebSocketObserver private (name: String, socket: ServerWebSocket) extends 
         logger.error(s"$name Error ending socket connected to ${socket.remoteAddress()}", e)
     }
   }
+
 }
